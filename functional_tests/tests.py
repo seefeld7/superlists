@@ -56,9 +56,42 @@ class NewVisitorTest(LiveServerTestCase):
         self.check_for_row_in_list_table('2: Use peacock feathers to make a fly')
         self.check_for_row_in_list_table('1: Buy peacock feathers')
 
+        ##New browser session
+        self.browser.quit()
+        self.browser = webdriver.Firefox()
+
+        #francis vists home with no signs of edith
+        self.browser.get(self.live_server_url)
+        page_text=self.browser.find_element_by_tag_name('body').text
+
+        self.assertNotIn('Buy peacock feathers', page_text)
+        self.assertNotIn('make a fly',page_text)
+
+        #francis enters a new item
+        inputbox=self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('Buy milk')
+        inputbox.send_keys(Keys.ENTER)
+
+        #francis gets his own url
+        francis_list_url=self.browser.current_url
+        self.assertRegex(francis_list_url,'/lists/.+')
+        self.assertNotEqual(francis_list_url,edith_list_url)
+
+        page_text=self.browser.find_element_by_tag_name('body').text
+        self.assertIn('Buy milk', page_text)
+
+
+
+
+        inputbox.send_keys(Keys.ENTER)
+        edith_list_url=self.browser.current_url
+        self.assertRegex(edith_list_url,'/list/.+')
+        self.check_for_row_in_list_table('1: Buy peacock feathers')
+
         # Edith wonders whether the site will remember her list. Then she sees
         # that the site has generated a unique URL for her -- there is some
         # explanatory text to that effect.
+
         self.fail('Finish the test!')
 
         # She visits that URL - her to-do list is still there.
